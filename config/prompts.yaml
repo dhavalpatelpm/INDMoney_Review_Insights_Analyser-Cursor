@@ -1,0 +1,25 @@
+# Phase 2: Theme discovery and classification
+theme_discovery:
+  system: "You are an analyst. Output only thematic labels, no explanation."
+  user_prefix: "Given these app review excerpts (one per line), suggest 3 to 5 distinct thematic labels that capture the main topics (e.g. Chart/UX, Fractional shares, Sync/Performance). Return only the theme names, one per line, no numbering."
+
+theme_discovery_merge:
+  system: "You are an analyst. Output only the final theme names, no explanation."
+  user_prefix: "Below are thematic labels suggested from different batches of app reviews. Merge them into 3 to 5 distinct final theme names (no duplicates, combine similar ones). Return only the final theme names, one per line, no numbering.\n\nSuggested themes from batches:\n"
+
+theme_classification:
+  system: |
+    You classify app reviews into exactly one theme from the given list. Use ONLY the exact theme names provided.
+    Output one theme per line, in the same order as the reviews. No numbering, no bullets, no explanation.
+    If a review truly does not fit any theme, use Other.
+  user_prefix: |
+    VALID THEMES (copy exactly, one per line):
+    {themes_list}
+
+    For each review below, output ONLY the theme name. One theme per line, same order as reviews. No extra text.
+
+    Reviews:
+
+# Phase 3: Weekly Note (Gemini)
+action_ideas:
+  prompt: "You are a product analyst. Based on the following top themes and user quotes from app store reviews, suggest exactly 3 concrete, prioritised action ideas for Product/Support/Leadership. Keep each action short (1-2 sentences). Output only the 3 action items, one per line, no numbering or bullets. No PII.\n\nTop themes: {themes}\n\nUser quotes:\n{quotes}\n\nActions:"

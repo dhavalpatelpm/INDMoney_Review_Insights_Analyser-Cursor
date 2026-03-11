@@ -1,0 +1,42 @@
+# Phase 1: Review Ingestion and Cleaning
+app_id: "in.indwealth"
+weeks_back: 6   # fetch last 6 weeks (balanced speed vs coverage); increase to 8-12 for deeper analysis
+lang: "en"
+country: "in"
+
+# Paths (relative to project root or absolute)
+data_dir: "data"
+raw_reviews_file: "raw_reviews.json"
+cleaned_reviews_file: "cleaned_reviews.json"
+
+# Fetcher: pagination and rate limiting
+reviews_per_request: 200  # max per API call (library often allows ~200)
+request_delay_seconds: 0.5  # delay between pages (lower = faster; avoid 0 to reduce rate-limit risk)
+max_retries: 3
+
+# Phase 2: Theme Discovery and Classification (Groq)
+# Set GROQ_API_KEY in environment
+themed_reviews_file: "themed_reviews.json"
+max_themes: 5
+# Send all filtered reviews to LLM for theme discovery (true). If false, uses theme_discovery_sample_size (faster).
+theme_discovery_use_all_reviews: false
+theme_discovery_sample_size: 80   # sample for discovery (single LLM call); increase for richer themes
+# Split theme discovery: N reviews per request, then merge. Set 0 for single request (faster).
+theme_discovery_chunk_size: 0
+theme_discovery_chunk_delay_seconds: 0.5  # delay between chunks (when chunk_size > 0)
+theme_classification_batch_size: 50  # larger batches = fewer API calls; classification runs in parallel
+theme_classification_max_workers: 3  # parallel Groq classification batches (avoids rate limits)
+
+# Phase 3: Weekly Note Generation (Gemini)
+# Set GOOGLE_API_KEY or GEMINI_API_KEY in environment
+weekly_notes_dir: "weekly_notes"
+weekly_note_filename: "weekly_note"
+top_themes_count: 3
+quotes_count: 3
+actions_count: 3
+
+# Phase 4: Email Delivery
+# Set SMTP_* in .env. Recipient: pass recipient_email and recipient_name from front-end to run_phase4(), or set here / in .env for CLI.
+email_dry_run: true  # true = only save draft; false = send email
+# email_to: ""       # optional; overridden by run_phase4(recipient_email=...) when called from front-end
+# recipient_name: "" # optional; for personalized greeting "Hi, {name},". Overridden by run_phase4(recipient_name=...) from front-end.
