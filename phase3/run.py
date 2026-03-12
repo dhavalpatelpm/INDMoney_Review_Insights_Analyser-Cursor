@@ -78,9 +78,20 @@ def run_phase3(config: dict | None = None) -> dict:
 
     theme_rank = themed.get("theme_rank", [])
     groups = themed.get("groups", {})
+    discovered_themes = [t for t in (themed.get("themes") or []) if t != "Other"]
+
+    # Never show "Other" as a theme — use only named themes for trust and clarity
     top_themes = [t for t in theme_rank if t != "Other"][:top_n]
-    if len(top_themes) < top_n and "Other" in theme_rank:
-        top_themes = theme_rank[:top_n]
+    if not top_themes and discovered_themes:
+        top_themes = discovered_themes[:top_n]
+        logger.info("Phase 3: Using discovered themes (no non-Other themes in rank): %s", top_themes)
+    elif len(top_themes) < top_n and discovered_themes:
+        # Fill remaining slots from discovered themes instead of "Other"
+        seen = set(top_themes)
+        for t in discovered_themes:
+            if t not in seen and len(top_themes) < top_n:
+                top_themes.append(t)
+                seen.add(t)
 
     total_reviews = sum(len(revs) for revs in groups.values())
     date_range = date_range_from_reviews(groups)

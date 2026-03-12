@@ -15,7 +15,7 @@ try:
 except ImportError:
     pass
 
-from phase4.email_draft import LOGO_CID, LOGO_PATH, build_draft
+from phase4.email_draft import LOGO_CID, LOGO_PATH, build_draft, build_draft_plain
 from phase4.send_email import send_email
 
 logging.basicConfig(
@@ -88,14 +88,19 @@ def run_phase4(
     logger.info("Phase 4: Draft subject: %s", subject)
 
     if dry_run:
-        draft_path = data_dir / notes_dir / "email_draft.html"
-        draft_path.parent.mkdir(parents=True, exist_ok=True)
+        draft_dir = data_dir / notes_dir
+        draft_dir.mkdir(parents=True, exist_ok=True)
+        draft_path = draft_dir / "email_draft.html"
         with open(draft_path, "w", encoding="utf-8") as f:
             f.write(
                 f'<!DOCTYPE html><html><head><meta charset="utf-8"></head><body>'
                 f'<p><strong>Subject:</strong> {subject}</p>\n\n{body}</body></html>'
             )
-        logger.info("Phase 4: Dry run — draft saved to %s (not sent)", draft_path)
+        _, body_plain = build_draft_plain(note, recipient_name=name or None)
+        txt_path = draft_dir / "email_draft.txt"
+        with open(txt_path, "w", encoding="utf-8") as f:
+            f.write(f"Subject: {subject}\n\n{body_plain}")
+        logger.info("Phase 4: Dry run — draft saved to %s and %s (not sent)", draft_path, txt_path)
         return subject, body
 
     send_email(
